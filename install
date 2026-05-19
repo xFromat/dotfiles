@@ -8,10 +8,24 @@ log.info() {
 	echo "INFO: $@"
 }
 
-if ! comand -v git &>/dev/null; then
+if ! command -v git &>/dev/null; then
 	log.err "git is not installed"
 	exit 1
 fi
 
 git submodule init
 git submodule update
+
+if ! command -v stow &>/dev/null; then
+	log.err "GNU stow is unreachable - exitting"
+	exit 1
+fi
+
+for f in ./*; do
+	if [[ ! -d "$f" ]]; then
+		continue
+	fi
+	d=$(basename "$f")
+	log.info "Installing $d"
+	stow "$d"
+done
