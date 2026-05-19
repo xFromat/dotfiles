@@ -1,0 +1,17 @@
+#!/usr/bin/env zsh
+
+log.err() {
+	echo "ERR: $@"
+}
+
+log.info() {
+	echo "INFO: $@"
+}
+
+if ! comand -v git &>/dev/null; then
+	log.err "git is not installed"
+	exit 1
+fi
+
+git submodule init
+git submodule update
