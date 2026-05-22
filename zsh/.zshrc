@@ -139,6 +139,7 @@ IDF_PATH='/home/peter/esp/v5.3/esp-idf'
 
 #export PATH=$PATH:$(go env GOPATH)/bin
 export PATH=$PATH:/usr/local/go/bin
+export PATH=$PATH:$HOME/go/bin
 
 # >>> LaTeX >>>
 # Add TeX Live's man pages to MANPATH
