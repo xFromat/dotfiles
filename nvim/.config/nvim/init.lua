@@ -1,3 +1,5 @@
+#require("lazy").setup("plugins")
+
 vim.opt.mouse = ""          -- disable mouse
 vim.opt.tabstop = 4         -- tab width = 4 spaces
 vim.opt.shiftwidth = 4      -- indent width = 4 spaces
