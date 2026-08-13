@@ -27,5 +27,5 @@ for f in ./*; do
 	fi
 	d=$(basename "$f")
 	log.info "Installing $d"
-	stow "$d"
+	stow -t "$HOME" "$d"
 done
