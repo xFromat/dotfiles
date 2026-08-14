@@ -36,4 +36,6 @@ alias pbcopy='xsel --clipboard --input'
 alias pbpaste='xsel --clipboard --output'
 alias lzg='lazygit'
 
+# Pretifying bash
+eval "$(starship init bash)"
 
