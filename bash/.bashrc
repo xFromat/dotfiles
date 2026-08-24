@@ -28,6 +28,17 @@ if [[ -z "$SSH_AUTH_SOCK" ]]; then
 	eval "$(ssh-agent -s)" &>/dev/null
 fi
 
+tmx () {
+  local SESSION_NAME="${1:-SessionName}"
+  tmux new-session -d -s "$SESSION_NAME"
+  tmux rename-window -t "$SESSION_NAME:0" project
+  tmux new-window -d -t "$SESSION_NAME" -n spare
+  tmux new-window -d -t "$SESSION_NAME" -n ssh
+  tmux new-window -d -t "$SESSION_NAME" -n LP_1
+  tmux new-window -d -t "$SESSION_NAME" -n LP_2
+  tmux attach-session -t "$SESSION_NAME"
+}
+
 alias lll='lsd -lt'
 alias la='lsd -a'
 alias ll='lsd -Alt'
@@ -39,3 +50,10 @@ alias lzg='lazygit'
 # Pretifying bash
 eval "$(starship init bash)"
 
+# pnpm
+export PNPM_HOME="$HOME/.local/share/pnpm"
+case ":$PATH:" in
+  *":$PNPM_HOME/bin:"*) ;;
+  *) export PATH="$PNPM_HOME/bin:$PATH" ;;
+esac
+# pnpm end
