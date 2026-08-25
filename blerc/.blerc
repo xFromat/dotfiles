@@ -1,0 +1,13 @@
+# Tune autosuggestion delay (ms)
+bleopt complete_auto_delay=50
+
+# Hide the "[ble: EOF]" marker some people find annoying
+bleopt prompt_eol_mark=
+
+# Valid names. Unknown commands still use syntax_error (red).
+# highlight_filename must stay on; that is what classifies commands.
+ble-face syntax_command=fg=green
+ble-face command_file=fg=green
+ble-face command_builtin=fg=cyan
+ble-face command_builtin_dot=fg=cyan,bold
+ble-face command_jobs=fg=cyan
