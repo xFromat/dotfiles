@@ -1,0 +1,41 @@
+onboarding = false
+# Mapped from tmux/.tmux.conf for herdr 0.8.0.
+# Stow this file only. Do not stow the rest of ~/.config/herdr.
+
+[theme]
+name = "gruvbox"
+auto_switch = false
+
+[terminal]
+default_shell = "/usr/bin/bash"
+
+[keys]
+# tmux: setw -g mode-keys vi
+copy_mode = "prefix+["
+focus_pane_left = "prefix+h"
+focus_pane_down = "prefix+j"
+focus_pane_up = "prefix+k"
+focus_pane_right = "prefix+l"
+navigate_pane_left = "h"
+navigate_pane_down = "j"
+navigate_pane_up = "k"
+navigate_pane_right = "l"
+
+[ui]
+show_agent_labels_on_pane_borders = true
+# tmux status bar sits at the bottom
+tab_bar_position = "bottom"
+
+[ui.toast]
+delivery = "system"
+
+[ui.sidebar.spaces]
+# tmux: @tokyo-night-tmux_show_git = 1
+rows = [["state_icon", "workspace"], ["branch", "git_status"]]
+
+[session]
+# tmux-resurrect: herdr already persists the session
+resume_agents_on_restore = true
+
+[ui.sound]
+enabled = true

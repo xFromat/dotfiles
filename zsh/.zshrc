@@ -167,6 +167,62 @@ tmx () {
     tmux attach-session -t "$SESSION_NAME"
 }
 
+hrx () {
+    local SESSION_NAME="${1:-SessionName}"
+    local sock running ws tab name i created existing
+    sock="$HOME/.config/herdr/sessions/$SESSION_NAME/herdr.sock"
+    [[ $SESSION_NAME == default ]] && sock="$HOME/.config/herdr/herdr.sock"
+    hrx_cmd() { env -u HERDR_SOCKET_PATH herdr --session "$SESSION_NAME" "$@"; }
+
+    running=$(herdr session list --json | jq -r --arg n "$SESSION_NAME" \
+        '.sessions[] | select(.name == $n) | .running')
+    if [[ $running != true ]]; then
+        herdr --session "$SESSION_NAME" server </dev/null >/dev/null 2>&1 &
+        disown $! 2>/dev/null || true
+        i=0
+        while [[ ! -S $sock ]] && ((i < 40)); do
+            i=$((i + 1))
+            sleep 0.05
+        done
+        if [[ ! -S $sock ]]; then
+            echo "hrx: herdr session '$SESSION_NAME' did not start" >&2
+            unset -f hrx_cmd
+            return 1
+        fi
+    fi
+
+    ws=$(hrx_cmd workspace list 2>/dev/null |
+        jq -r '.result.workspaces[0].workspace_id // empty')
+    if [[ -z $ws ]]; then
+        created=$(hrx_cmd workspace create --label "$SESSION_NAME" --no-focus)
+        ws=$(printf '%s\n' "$created" | jq -r '.result.workspace.workspace_id // empty')
+        tab=$(printf '%s\n' "$created" | jq -r '.result.tab.tab_id // empty')
+    else
+        hrx_cmd workspace rename "$ws" "$SESSION_NAME" >/dev/null
+        tab=$(hrx_cmd tab list --workspace "$ws" 2>/dev/null |
+            jq -r '.result.tabs[0].tab_id // empty')
+    fi
+    if [[ -z $ws || -z $tab ]]; then
+        echo "hrx: could not create workspace in '$SESSION_NAME'" >&2
+        unset -f hrx_cmd
+        return 1
+    fi
+
+    existing=$(hrx_cmd tab list --workspace "$ws" 2>/dev/null |
+        jq -r '.result.tabs[] | .label')
+    if ! grep -qx project <<<"$existing"; then
+        hrx_cmd tab rename "$tab" project >/dev/null
+        existing=$(printf '%s\n' "$existing" | sed '1s/.*/project/')
+    fi
+    for name in spare ssh LP_1 LP_2; do
+        grep -qx "$name" <<<"$existing" && continue
+        hrx_cmd tab create --workspace "$ws" --label "$name" --no-focus >/dev/null
+    done
+    hrx_cmd tab focus "$tab" >/dev/null
+    unset -f hrx_cmd
+    herdr session attach "$SESSION_NAME"
+}
+
 
 # opencode
 export PATH=/home/peter/.opencode/bin:$PATH
