@@ -84,11 +84,11 @@ hrx () {
 
   existing=$(hrx_cmd tab list --workspace "$ws" 2>/dev/null |
     jq -r '.result.tabs[] | .label')
-  if ! grep -qx project <<<"$existing"; then
-    hrx_cmd tab rename "$tab" project >/dev/null
+  if ! grep -qx "1 project" <<<"$existing"; then
+    hrx_cmd tab rename "$tab" "1 project" >/dev/null
     existing=$(printf '%s\n' "$existing" | sed '1s/.*/project/')
   fi
-  for name in spare ssh LP_1 LP_2; do
+  for name in "2 spare" "3 ssh" "4 LP_1" "5 LP_2"; do
     grep -qx "$name" <<<"$existing" && continue
     hrx_cmd tab create --workspace "$ws" --label "$name" --no-focus >/dev/null
   done
