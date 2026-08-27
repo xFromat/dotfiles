@@ -105,6 +105,9 @@ alias pbcopy='xsel --clipboard --input'
 alias pbpaste='xsel --clipboard --output'
 alias lzg='lazygit'
 
+alias hls='herdr session list'
+alias hsa='herdr session attach'
+
 # Pretifying bash
 eval "$(starship init bash)"
 
@@ -117,3 +120,5 @@ esac
 # pnpm end
 
 [[ ! ${BLE_VERSION-} ]] || ble-attach
+shopt -s autocd
+shopt -s cdspell

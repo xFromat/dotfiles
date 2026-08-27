@@ -25,7 +25,12 @@ navigate_pane_right = "l"
 show_agent_labels_on_pane_borders = true
 # tmux status bar sits at the bottom
 tab_bar_position = "bottom"
+# Keep the frame around panes; collapse the extra cell between adjacent borders.
+pane_borders = true
+pane_outer_borders = true
+pane_gaps = false
 
+status_indicators = "symbols"
 [ui.toast]
 delivery = "system"
 
