@@ -122,3 +122,4 @@ esac
 [[ ! ${BLE_VERSION-} ]] || ble-attach
 shopt -s autocd
 shopt -s cdspell
+export PATH=$PATH:$HOME/.local/opt/go/bin
