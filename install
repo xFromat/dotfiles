@@ -26,6 +26,9 @@ for f in ./*; do
 		continue
 	fi
 	d=$(basename "$f")
+	if [[ "$d" == windows* ]]; then
+		continue
+	fi
 	log.info "Installing $d"
 	stow -t "$HOME" "$d"
 done
