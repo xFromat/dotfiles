@@ -1,8 +1,17 @@
 # Tune autosuggestion delay (ms)
 bleopt complete_auto_delay=150
 
+# Ghost suggestions: gray like a canceled line, no background.
+# Default is fg=238,bg=254 (white behind the hint).
+ble-face auto_complete=ref:disabled
+
 # Hide the "[ble: EOF]" marker some people find annoying
 bleopt prompt_eol_mark=
+
+# Errors: red text, no background.
+ble-face syntax_error=fg=red
+ble-face argument_error=fg=red
+ble-face command_suffix_new=fg=red
 
 # Valid names. Unknown commands still use syntax_error (red).
 # highlight_filename must stay on; that is what classifies commands.
