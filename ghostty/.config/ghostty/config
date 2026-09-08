@@ -1,5 +1,5 @@
 #window-padding-color = background
-background-opacity = 0.6
+background-opacity = 0.95
 background-blur = true
 maximize = true
 font-feature = -liga
