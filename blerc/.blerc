@@ -1,58 +1,19 @@
 # Tune autosuggestion delay (ms)
 bleopt complete_auto_delay=150
 
-# Ghost suggestions: gray like a canceled line, no background.
-# Default is fg=238,bg=254 (white behind the hint).
-ble-face auto_complete=ref:disabled
-
 # Hide the "[ble: EOF]" marker some people find annoying
 bleopt prompt_eol_mark=
 
-# Starship writes a finished prompt into PS1. ble.sh then treats that string
-# as static. Drive the prompt ourselves and pass PWD in on every redraw.
-function ble/prompt/backslash:blerc/starship/.assign {
-	local _blerc_var=$1
-	shift
-	ble/prompt/unit/add-hash '$PWD'
-	ble/prompt/unit/add-hash '$_ble_edit_lineno'
-	ble/prompt/unit/add-hash '${_ble_edit_exec_lastexit-0}'
-	local status=${STARSHIP_CMD_STATUS-${_ble_edit_exec_lastexit-0}}
-	local -a _blerc_args=("$@"
-		--terminal-width="${COLUMNS:-80}"
-		--status="${status:-0}"
-		--path="$PWD"
-		--logical-path="$PWD"
-		--shlvl="${SHLVL:-1}"
-	)
-	[[ ${STARSHIP_DURATION-} ]] && _blerc_args+=(--cmd-duration="$STARSHIP_DURATION")
-	[[ ${STARSHIP_PIPE_STATUS-} ]] && _blerc_args+=(--pipestatus="${STARSHIP_PIPE_STATUS[*]}")
-	ble/util/assign "$_blerc_var" 'command starship prompt "${_blerc_args[@]}"'
-}
-function ble/prompt/backslash:blerc/starship {
-	local ps
-	ble/prompt/backslash:blerc/starship/.assign ps
-	ble/prompt/process-prompt-string "$ps"
-}
-function ble/prompt/backslash:blerc/starship-right {
-	local ps
-	ble/prompt/backslash:blerc/starship/.assign ps --right
-	ble/prompt/process-prompt-string "$ps"
-}
-function blerc/starship-install {
-	ble/is-function starship_precmd || return 0
-	if ! ble/is-function blerc/starship-precmd.orig; then
-		ble/function#copy starship_precmd blerc/starship-precmd.orig
-		function starship_precmd {
-			blerc/starship-precmd.orig "$@"
-			PS1='\q{blerc/starship}'
-			bleopt prompt_rps1='\q{blerc/starship-right}'
-		}
-	fi
-	PS1='\q{blerc/starship}'
-	bleopt prompt_rps1='\q{blerc/starship-right}'
-}
-blehook ATTACH!='blerc/starship-install'
-blerc/starship-install
+# ble-reload drops hooks that starship registered from .bashrc, which
+# freezes the prompt path. Re-add them when starship is already loaded.
+if ble/is-function starship_precmd; then
+	blehook PRECMD!='starship_precmd'
+	blehook PREEXEC!='starship_preexec "$_"'
+fi
+
+# Ghost suggestions: gray like a canceled line, no background.
+# Default is fg=238,bg=254 (white behind the hint).
+ble-face auto_complete=ref:disabled
 
 # Errors: red text, no background.
 ble-face syntax_error=fg=red
