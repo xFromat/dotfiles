@@ -110,6 +110,7 @@ alias hsa='herdr session attach'
 
 # Pretifying bash
 eval "$(starship init bash)"
+ble/is-function blerc/starship-install && blerc/starship-install
 
 # pnpm
 export PNPM_HOME="$HOME/.local/share/pnpm"
