@@ -138,12 +138,12 @@ capsule_fill = "on_secondary"
 color = "secondary"
 
 [widget.workspaces]
-style = "focus_hint"
-active_pill_size = 2.5
+style = "regular"
+active_pill_size = 2.0
 capsule = true
 capsule_fill = "on_primary"
 inactive_pill_size = 1.0
 pill_scale = 1.0
 show_labels = true
-show_icons = true
-labels_only_when_occupied = true
+show_icons = false
+labels_only_when_occupied = false
