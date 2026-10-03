@@ -1,0 +1,427 @@
+#!/usr/bin/env bash
+#
+# webapp-add - create isolated Helium web app launchers (Hyprland + Noctalia)
+# Needs: bash >= 4.4, curl, sed, grep, gio (glib2)
+#
+set -euo pipefail
+
+PROG=${0##*/}
+CONF="${XDG_CONFIG_HOME:-$HOME/.config}/webapp-add.conf"
+APPS_DIR="$HOME/.local/share/applications"
+ICONS_DIR="$HOME/.local/share/icons/webapps"
+MAN_DIR="$HOME/.local/share/man/man1"
+
+die()  { echo "$PROG: error: $*" >&2; exit 1; }
+warn() { echo "$PROG: warning: $*" >&2; }
+
+usage() {
+  cat <<EOF
+Usage:
+  $PROG [options] NAME URL     create (or overwrite) a web app
+  $PROG -r NAME [-y]           remove a web app
+  $PROG -l                     list web apps
+  $PROG -h | --man | --install-man
+
+Each web app opens in Helium app mode (no tabs, no address bar) with its
+own isolated browser profile, and gets a .desktop entry for the launcher.
+
+Options:
+  -i, --icon ICON          icon: an http(s) URL or a local file
+                           (default: try the dashboard-icons set by name)
+  -k, --key KEY            add a Hyprland bind: MODS + KEY
+  -m, --mods MODS          modifiers for --key (default: "SUPER SHIFT")
+  -b, --browser PATH       Helium executable (AppImage or binary)
+  -P, --profiles-dir DIR   where per-app profiles live
+                           (default: ~/.local/share/webapps/profiles)
+  -r, --remove             remove the web app called NAME
+  -y, --yes                with -r: delete the profile without asking
+  -l, --list               list web apps created by this tool
+  -h, --help               show this help
+      --man                show the manual page (no installation needed)
+      --install-man        install the manual page to ~/.local/share/man
+
+Browser lookup order: -b, \$WEBAPP_BROWSER, "browser=" in
+$CONF, then helium-browser / helium in PATH.
+
+Examples:
+  $PROG ChatGPT https://chatgpt.com/ -k A
+  $PROG -i ~/Pictures/claude.png Claude https://claude.ai/ -k C
+  $PROG -r ChatGPT
+EOF
+}
+
+print_man() {
+  cat <<'ROFF'
+.TH WEBAPP-ADD 1 "September 2026" "webapp-add" "User Commands"
+.SH NAME
+webapp-add \- create isolated Helium web app launchers for Hyprland
+.SH SYNOPSIS
+.B webapp-add
+[\fIOPTIONS\fR] \fINAME\fR \fIURL\fR
+.br
+.B webapp-add \-r
+[\fB\-y\fR] \fINAME\fR
+.br
+.B webapp-add \-l
+.br
+.B webapp-add
+.RB [ \-h " | " \-\-man " | " \-\-install\-man ]
+.SH DESCRIPTION
+.B webapp-add
+turns a website into a launcher that looks like a native application.
+It writes a freedesktop
+.B .desktop
+entry that starts Helium in app mode (\fB\-\-app=URL\fR) using a dedicated
+\fB\-\-user\-data\-dir\fR, so every web app is isolated from your main browser
+profile and from every other web app: cookies, logins, extensions and settings
+are never shared.
+.PP
+The entry is placed in
+.I ~/.local/share/applications
+so launchers such as Noctalia pick it up automatically. Optionally a Hyprland
+keybinding is added.
+.PP
+The Helium executable is used directly, so this works with an AppImage, a
+native package or any other Chromium-based browser that supports
+\fB\-\-app\fR and \fB\-\-user\-data\-dir\fR.
+.SH OPTIONS
+.TP
+.BR \-i ", " \-\-icon " " \fIICON\fR
+Icon for the launcher: an http(s) URL or a path to a local image (PNG or SVG).
+If omitted, an icon named after the app is fetched from the dashboard-icons
+collection; if that fails, a generic icon is used.
+.TP
+.BR \-k ", " \-\-key " " \fIKEY\fR
+Add a Hyprland keybinding for this app, using the modifiers from
+.BR \-\-mods .
+The binding is written to the file named by
+.B WEBAPP_HYPR_CONF
+and Hyprland is reloaded if it is running.
+.TP
+.BR \-m ", " \-\-mods " " \fIMODS\fR
+Modifiers for
+.BR \-\-key .
+Default: "SUPER SHIFT".
+.TP
+.BR \-b ", " \-\-browser " " \fIPATH\fR
+Path to the Helium executable.
+.TP
+.BR \-P ", " \-\-profiles\-dir " " \fIDIR\fR
+Directory that holds one profile subdirectory per web app.
+.TP
+.BR \-r ", " \-\-remove
+Remove the web app called
+.IR NAME :
+its desktop entry, icon, keybinding and, after confirmation, its profile.
+.TP
+.BR \-y ", " \-\-yes
+With
+.BR \-r ,
+delete the profile without asking.
+.TP
+.BR \-l ", " \-\-list
+List web apps created by this tool with their URL and keybinding.
+.TP
+.BR \-h ", " \-\-help
+Print a short usage summary and exit.
+.TP
+.B \-\-man
+Display this manual page without installing it.
+.TP
+.B \-\-install\-man
+Install this manual page to
+.IR ~/.local/share/man/man1 .
+.SH ENVIRONMENT
+.TP
+.B WEBAPP_BROWSER
+Path to the Helium executable.
+.TP
+.B WEBAPP_PROFILES_ROOT
+Base directory for per-app profiles.
+.TP
+.B WEBAPP_HYPR_CONF
+Hyprland file that receives the keybindings
+(default: ~/.config/hypr/webapps.conf).
+.PP
+Environment variables override the configuration file; command line options
+override both.
+.SH FILES
+.TP
+.I ~/.config/webapp-add.conf
+Optional configuration, one
+.IB key = value
+per line. Recognised keys:
+.BR browser ,
+.BR profiles_dir ,
+.BR hypr_conf .
+Use absolute paths; a leading ~ is expanded.
+.TP
+.I ~/.local/share/applications/webapp-NAME.desktop
+Generated launcher.
+.TP
+.I ~/.local/share/webapps/profiles/NAME/
+Isolated browser profile of one web app.
+.TP
+.I ~/.local/share/icons/webapps/
+Downloaded icons.
+.TP
+.I ~/.config/hypr/webapps.conf
+Generated keybindings. Add
+.B source = ~/.config/hypr/webapps.conf
+to
+.I hyprland.conf
+once.
+.SH EXAMPLES
+Create a web app and bind it to SUPER+SHIFT+A:
+.PP
+.RS
+webapp-add ChatGPT https://chatgpt.com/ \-k A
+.RE
+.PP
+Use a custom icon and different modifiers:
+.PP
+.RS
+webapp-add \-i ~/Pictures/claude.png \-m "SUPER ALT" \-k C Claude https://claude.ai/
+.RE
+.PP
+Remove it again, including its profile:
+.PP
+.RS
+webapp-add \-r \-y ChatGPT
+.RE
+.SH NOTES
+Each web app uses its own browser process tree, so many open web apps use
+more memory than many windows of one browser.
+.PP
+The window class of an app window normally has the form
+.BR chrome\-HOST_PATH\-Default .
+Check it with
+.B hyprctl clients
+and correct
+.B StartupWMClass
+in the generated desktop file if it differs.
+.PP
+If the Helium AppImage is renamed or moved when it is updated, generated
+launchers will break; point
+.B browser
+at a stable path or wrapper script.
+.SH SEE ALSO
+.BR hyprctl (1),
+.BR gio (1),
+.BR man (1)
+ROFF
+}
+
+show_man() {
+  local t
+  t=$(mktemp --suffix=.1)
+  print_man > "$t"
+  man -l "$t" || true
+  rm -f "$t"
+}
+
+install_man() {
+  mkdir -p "$MAN_DIR"
+  print_man > "$MAN_DIR/webapp-add.1"
+  echo "Installed $MAN_DIR/webapp-add.1"
+  echo "Try: man webapp-add   (if not found, add ~/.local/share/man to MANPATH)"
+}
+
+load_config() {
+  local k v
+  [[ -r $CONF ]] || return 0
+  while IFS='=' read -r k v || [[ -n $k ]]; do
+    v=${v%\"}; v=${v#\"}; v=${v/#\~/$HOME}
+    case $k in
+      browser)      : "${WEBAPP_BROWSER:=$v}" ;;
+      profiles_dir) : "${WEBAPP_PROFILES_ROOT:=$v}" ;;
+      hypr_conf)    : "${WEBAPP_HYPR_CONF:=$v}" ;;
+    esac
+  done < "$CONF"
+}
+
+slugify() {
+  printf '%s' "$1" | tr '[:upper:]' '[:lower:]' | tr -s ' _' '-' \
+    | sed 's/[^a-z0-9-]//g; s/^-*//; s/-*$//'
+}
+
+resolve_browser() {
+  local b=$BROWSER_BIN
+  [[ -n $b ]] || b=$(command -v helium-browser || command -v helium || true)
+  [[ -n $b ]] || die "Helium not found. Use -b PATH, set WEBAPP_BROWSER, or add browser=PATH to $CONF"
+  [[ -x $b ]] || die "not executable: $b"
+  BROWSER_BIN=$b
+}
+
+fetch_icon() {  # prints the icon path (or a generic icon name)
+  local slug=$1 src=$2 ext=png dest
+  case $src in *.svg|*.svg\?*) ext=svg ;; esac
+  dest="$ICONS_DIR/$slug.$ext"
+  if [[ $src == http*://* ]]; then
+    curl -fsSL --max-time 15 "$src" -o "$dest" 2>/dev/null && { echo "$dest"; return 0; }
+  elif [[ -n $src && -f $src ]]; then
+    cp -- "$src" "$dest" && { echo "$dest"; return 0; }
+  elif [[ -z $src ]]; then
+    curl -fsSL --max-time 15 \
+      "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/$slug.png" \
+      -o "$dest" 2>/dev/null && { echo "$dest"; return 0; }
+  fi
+  rm -f -- "$dest"
+  if [[ -n $src ]]; then warn "could not use icon '$src', using a generic icon"; fi
+  echo applications-internet
+}
+
+wm_class() {  # Chromium's app_id for --app windows
+  local hostpath=${1#*://} host path
+  host=${hostpath%%/*}
+  if [[ $hostpath == */* ]]; then path="/${hostpath#*/}"; else path="/"; fi
+  path=${path%%[?#]*}
+  echo "chrome-${host}_${path//\//_}-Default"
+}
+
+add_bind() {
+  local slug=$1 desktop=$2 key=$3 line
+  mkdir -p "$(dirname "$HYPR_CONF")"
+  touch "$HYPR_CONF"
+  sed -i "/# webapp:$slug\$/d" "$HYPR_CONF"
+  if grep -qF -- "bind = $MODS, $key," "$HYPR_CONF"; then
+    warn "$MODS + $key is already bound in $HYPR_CONF; the older binding wins"
+  fi
+  line="bind = $MODS, $key, exec, gio launch $desktop # webapp:$slug"
+  echo "$line" >> "$HYPR_CONF"
+  if ! grep -qs "webapps.conf" "$HOME/.config/hypr/hyprland.conf"; then
+    echo "Add this to hyprland.conf once:  source = $HYPR_CONF"
+  fi
+}
+
+reload_hypr() {
+  if [[ -n ${HYPRLAND_INSTANCE_SIGNATURE:-} ]] && command -v hyprctl >/dev/null; then
+    hyprctl reload >/dev/null || true
+  fi
+}
+
+add_app() {
+  local name=$1 url=$2 slug profile icon_ref desktop url_esc class
+  resolve_browser
+
+  [[ $url == *://* ]] || url="https://$url"
+  case $url in http://*|https://*) ;; *) die "URL must start with http:// or https://" ;; esac
+  case $url in *[\"\`\$\\]*|*' '*) die "URL contains unsupported characters" ;; esac
+
+  slug=$(slugify "$name")
+  [[ -n $slug ]] || die "name '$name' has no usable characters"
+
+  profile="$PROFILES_ROOT/$slug"
+  mkdir -p "$APPS_DIR" "$ICONS_DIR" "$profile"
+
+  icon_ref=$(fetch_icon "$slug" "$icon")
+  url_esc=${url//%/%%}
+  class=$(wm_class "$url")
+  desktop="$APPS_DIR/webapp-$slug.desktop"
+
+	cat > "$desktop" <<-EOF
+		[Desktop Entry]
+		Version=1.0
+		Type=Application
+		Name=$name
+		Comment=$name (web app)
+		Exec="$BROWSER_BIN" "--user-data-dir=$profile" --ozone-platform-hint=auto "--app=$url_esc"
+		Icon=$icon_ref
+		StartupNotify=true
+		StartupWMClass=$class
+		Categories=Network;
+		X-WebApp=true
+	EOF
+
+  update-desktop-database "$APPS_DIR" 2>/dev/null || true
+  echo "Created $desktop"
+  echo "  profile: $profile"
+  echo "  expected window class: $class  (verify: hyprctl clients | grep class)"
+
+  if [[ -n $key ]]; then
+    add_bind "$slug" "$desktop" "$key"
+    reload_hypr
+    echo "  bound: $MODS + $key"
+  fi
+}
+
+remove_app() {
+  local slug desktop profile ans=n
+  slug=$(slugify "$1")
+  [[ -n $slug ]] || die "invalid name"
+  desktop="$APPS_DIR/webapp-$slug.desktop"
+  profile="$PROFILES_ROOT/$slug"
+  [[ -f $desktop ]] || die "no such web app: $slug"
+
+  if [[ -d $profile ]]; then
+    if ((assume_yes)); then
+      ans=y
+    else
+      read -r -p "Also delete its profile (logins, cookies) at $profile? [y/N] " ans || ans=n
+    fi
+  fi
+
+  rm -f -- "$desktop" "$ICONS_DIR/$slug.png" "$ICONS_DIR/$slug.svg"
+  if [[ -f $HYPR_CONF ]]; then sed -i "/# webapp:$slug\$/d" "$HYPR_CONF"; fi
+  if [[ $ans == [yY]* ]]; then rm -rf -- "$profile"; fi
+  update-desktop-database "$APPS_DIR" 2>/dev/null || true
+  reload_hypr
+  echo "Removed $slug"
+}
+
+list_apps() {
+  local f slug name url bind found=0
+  for f in "$APPS_DIR"/webapp-*.desktop; do
+    [[ -e $f ]] || break
+    found=1
+    slug=${f##*/webapp-}; slug=${slug%.desktop}
+    name=$(sed -n 's/^Name=//p' "$f" | head -1)
+    url=$(sed -n 's/.*"--app=\([^"]*\)".*/\1/p' "$f" | sed 's/%%/%/g' | head -1)
+    bind=""
+    if [[ -f $HYPR_CONF ]]; then
+      bind=$(sed -n "s/^bind = \(.*\), exec, .*# webapp:$slug\$/\1/p" "$HYPR_CONF" | head -1)
+    fi
+    printf '%-16s %-18s %-40s %s\n' "$slug" "$name" "$url" "$bind"
+  done
+  if ((!found)); then echo "No web apps yet."; fi
+}
+
+# ---- main -------------------------------------------------------------
+load_config
+BROWSER_BIN=${WEBAPP_BROWSER:-}
+PROFILES_ROOT=${WEBAPP_PROFILES_ROOT:-$HOME/.local/share/webapps/profiles}
+HYPR_CONF=${WEBAPP_HYPR_CONF:-$HOME/.config/hypr/webapps.conf}
+MODS="SUPER SHIFT"
+mode=add icon="" key="" assume_yes=0
+positional=()
+
+while (($#)); do
+  case $1 in
+    -h|--help)       usage; exit 0 ;;
+    --man)           show_man; exit 0 ;;
+    --install-man)   install_man; exit 0 ;;
+    -l|--list)       mode=list ;;
+    -r|--remove)     mode=remove ;;
+    -y|--yes)        assume_yes=1 ;;
+    -i|--icon)       [[ $# -ge 2 ]] || die "$1 needs a value"; icon=$2; shift ;;
+    -k|--key)        [[ $# -ge 2 ]] || die "$1 needs a value"; key=$2; shift ;;
+    -m|--mods)       [[ $# -ge 2 ]] || die "$1 needs a value"; MODS=$2; shift ;;
+    -b|--browser)    [[ $# -ge 2 ]] || die "$1 needs a value"; BROWSER_BIN=$2; shift ;;
+    -P|--profiles-dir) [[ $# -ge 2 ]] || die "$1 needs a value"; PROFILES_ROOT=$2; shift ;;
+    --)              shift; positional+=("$@"); break ;;
+    -*)              die "unknown option: $1 (try -h)" ;;
+    *)               positional+=("$1") ;;
+  esac
+  shift
+done
+
+case $mode in
+  list)
+    list_apps ;;
+  remove)
+    ((${#positional[@]} == 1)) || die "usage: $PROG -r NAME"
+    remove_app "${positional[0]}" ;;
+  add)
+    if ((${#positional[@]} != 2)); then usage >&2; exit 1; fi
+    add_app "${positional[0]}" "${positional[1]}" ;;
+esac
