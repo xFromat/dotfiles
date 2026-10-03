@@ -4,7 +4,7 @@ ui_scale = 1.20
 [bar.default]
 start = [ "workspaces", "spacer_1", "active_window" ]
 concave_edge_corners = true
-end = [ "media", "spacer_1", "tray", "notifications", "group:g1", "network", "volume", "battery", "session" ]
+end = [ "tray", "notifications", "group:g1", "network", "volume", "battery", "session" ]
 margin_edge = 0
 margin_ends = 0
 radius_bottom_left = 12
@@ -84,6 +84,10 @@ settings_show_advanced = true
 
 [system.monitor]
 gpu_poll_seconds = 2
+
+[lockscreen]
+transition = []
+tansition_duration = 0
 
 [theme]
 mode = "dark"
