@@ -107,6 +107,7 @@ alias lzg='lazygit'
 
 alias hls='herdr session list'
 alias hsa='herdr session attach'
+alias yi='yazi'
 
 # Pretifying bash
 eval "$(starship init bash)"
