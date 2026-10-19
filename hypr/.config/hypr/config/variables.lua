@@ -4,6 +4,7 @@ TERMINAL     = "ghostty"
 FILE_MANAGER = "dolphin"
 BROWSER      = "app.zen_browser.zen"
 EDITOR       = "zed"
+MESSENGER	 = "signal-desktop.desktop"
 CALCULATOR   = "gnome-calculator"
 
 -- Monitors
