@@ -123,3 +123,5 @@ esac
 shopt -s autocd
 shopt -s cdspell
 export PATH=$PATH:$HOME/.local/opt/go/bin
+
+. "$HOME/.local/share/../bin/env"
