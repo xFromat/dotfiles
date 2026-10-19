@@ -10,7 +10,7 @@
 -- Laptop screen
 hl.monitor({
     output    = MONITOR1,
-    mode      = "1920x1080@120",
+    mode      = "1920x1080@60",
     position  = "0x0",-- about half a screen of main monitor
     scale     = "1.25",
 })

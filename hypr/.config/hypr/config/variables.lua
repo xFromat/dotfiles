@@ -32,3 +32,6 @@ apply_primary()
 
 -- Workspaces
 NUM_WPM = 7 -- Number of workspaces per monitor (Max 10)
+
+-- Variables
+hl.env("GDK_WAYLAND_DISABLE", "ext_background_effect_manager_v1")
