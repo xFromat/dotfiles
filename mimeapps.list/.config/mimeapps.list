@@ -3,5 +3,9 @@
 [Default Applications]
 inode/directory=org.kde.dolphin.desktop;
 text/plain=dev.zed.Zed.desktop;
+application/yaml=dev.zed.Zed.desktop;
+text/markdown=dev.zed.Zed.desktop;
+image/jpeg=com.interversehq.qView.desktop;
+image/png=com.interversehq.qView.desktop;
 x-scheme-handler/http=app.zen_browser.zen.desktop;
 x-scheme-handler/https=app.zen_browser.zen.desktop;

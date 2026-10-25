@@ -5,4 +5,4 @@ maximize = true
 font-feature = -liga
 window-padding-balance = true
 #fullscreen
-theme = "Monokai Pro"
+theme = noctalia

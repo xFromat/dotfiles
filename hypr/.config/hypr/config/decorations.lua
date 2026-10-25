@@ -4,7 +4,7 @@ hl.config({
     general = {
         gaps_in = 1,
         gaps_out = 4,
-        border_size = 2,
+        border_size = 4, 
         extend_border_grab_area = 10,
         resize_on_border = true,
         col = {
@@ -35,7 +35,7 @@ hl.config({
         dim_special = 0.3,
         rounding = 5,
         active_opacity = 0.95,
-        inactive_opacity = 0.8,
+        inactive_opacity = 0.6,
         fullscreen_opacity = 1,
         blur = {
 			enabled = true,
