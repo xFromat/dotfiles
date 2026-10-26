@@ -4,7 +4,10 @@ TERMINAL     = "ghostty"
 FILE_MANAGER = "dolphin"
 BROWSER      = "app.zen_browser.zen"
 EDITOR       = "zed"
-MESSENGER	 = "signal-desktop.desktop"
+MESSENGER    = "signal-desktop.desktop"
+MUSIC_PLAYER = "spotify-launcher"
+YOUTUBE      = "io.freetubeapp.FreeTube"
+PASSWORDS    = "com.bitwarden.desktop"
 CALCULATOR   = "gnome-calculator"
 
 -- Monitors

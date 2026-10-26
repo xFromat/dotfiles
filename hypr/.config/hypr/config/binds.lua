@@ -1,6 +1,7 @@
 local mainMod = "SUPER"
 local noctCall = "noctalia msg "
 local launchPrefix = "uwsm app -- " -- if you are not using UWSM, make this empty (e.g. "")
+local flatpakPrefix = "flatpak run " -- if you are not using UWSM, make this empty (e.g. "")
 
 -- AZERTY fix: the number-row keys emit symbols (& é " ' ...) without Shift, so
 -- binding to the digit characters fails. Bind by physical keycode instead.
@@ -83,9 +84,10 @@ hl.bind(mainMod .. " + Return",     hl.dsp.exec_cmd(launchPrefix .. TERMINAL))
 hl.bind(mainMod .. " + E",          hl.dsp.exec_cmd(launchPrefix .. FILE_MANAGER))
 hl.bind(mainMod .. " + T",          hl.dsp.exec_cmd(launchPrefix .. EDITOR))
 hl.bind(mainMod .. " + M",          hl.dsp.exec_cmd(launchPrefix .. MESSENGER))
-hl.bind(mainMod .. " + G",          hl.dsp.exec_cmd(launchPrefix .. "flatpak run com.valvesoftware.Steam"))
-hl.bind(mainMod .. " + B",          hl.dsp.exec_cmd(launchPrefix .. "flatpak run com.bitwarden.desktop"))
-hl.bind(mainMod .. " + CONTROL + Y",hl.dsp.exec_cmd(launchPrefix .. "flatpak run io.freetubeapp.FreeTube"))
+hl.bind(mainMod .. " + SHIFT + M",  hl.dsp.exec_cmd(launchPrefix .. MUSIC_PLAYER))
+hl.bind(mainMod .. " + G",          hl.dsp.exec_cmd(launchPrefix .. flatpakPrefix .. "com.valvesoftware.Steam"))
+hl.bind(mainMod .. " + B",          hl.dsp.exec_cmd(launchPrefix .. flatpakPrefix .. PASSWORDS))
+hl.bind(mainMod .. " + CONTROL + Y",hl.dsp.exec_cmd(launchPrefix .. flatpakPrefix .. YOUTUBE))
 hl.bind(mainMod .. " + C",          hl.dsp.exec_cmd(launchPrefix .. CALCULATOR))
 hl.bind("XF86Calculator",           hl.dsp.exec_cmd(launchPrefix .. CALCULATOR))
 hl.bind(mainMod .. " + W",          hl.dsp.exec_cmd(launchPrefix .. BROWSER))

@@ -4,8 +4,7 @@ local bookmarks = {
   { tag = "Documents", path = "~/Documents", key = { "d", "d" } },
   { tag = "Downloads", path = "~/Downloads", key = "o" },
   { tag = "Projects", path = "~/Projects", key = "p" },
-  { tag = "Aiut", path = "~/Projects/pferst@git-rtls.aitu.com", key = "a" },
-  { tag = "Certs", path = "~/certs", key = "c" },
+  { tag = "dev", path = "~/Projects/dev", key = "p" },
 }
 
 require("whoosh"):setup {
