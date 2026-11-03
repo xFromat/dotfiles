@@ -1,5 +1,32 @@
 # .bashrc
 
+[[ -n $PS1 ]] || return
+
+# -- Environment variables
+
+export EDITOR='nvim'
+export VISUAL='nvim'
+export MANPAGER='less'
+export PAGER='less'
+
+# grotty 1.23 writes bold and underline as SGR. less then ignores LESS_TERMCAP_*.
+export GROFF_NO_SGR=1
+
+# Support colors in less
+export LESS_TERMCAP_mb=$'\e[1;31m'
+export LESS_TERMCAP_md=$'\e[1;31m'
+export LESS_TERMCAP_me=$'\e[0m'
+export LESS_TERMCAP_se=$'\e[0m'
+export LESS_TERMCAP_so=$'\e[1;33;44m'
+export LESS_TERMCAP_ue=$'\e[0m'
+export LESS_TERMCAP_us=$'\e[4;1;32m'
+export LESS_TERMCAP_mr=$'\e[7m'
+export LESS_TERMCAP_mh=$'\e[2m'
+export LESS_TERMCAP_ZN=$'\e[74m'
+export LESS_TERMCAP_ZV=$'\e[75m'
+export LESS_TERMCAP_ZO=$'\e[73m'
+export LESS_TERMCAP_ZW=$'\e[75m'
+
 # Source global definitions
 if [ -f /etc/bashrc ]; then
 	. /etc/bashrc
@@ -108,6 +135,12 @@ alias lzg='lazygit'
 alias hls='herdr session list'
 alias hsa='herdr session attach'
 alias yi='yazi'
+alias ga='git add'
+alias gc='git commit -m'
+alias gt='git status'
+alias gp='git push'
+alias passbolt='go-passbolt-cli'
+alias nul='nu -c ls'
 
 # Pretifying bash
 eval "$(starship init bash)"
@@ -123,7 +156,13 @@ esac
 [[ ! ${BLE_VERSION-} ]] || ble-attach
 shopt -s autocd
 shopt -s cdspell
-export PATH=$PATH:$HOME/.local/opt/go/bin
+export PATH=$PATH:/usr/local/go/bin
+export PATH="$PATH:$(go env GOPATH)/bin"
 
-export EDITOR=nvim
 
+
+. "$HOME/.atuin/bin/env"
+eval "$(atuin init bash --disable-up-arrow)"
+eval "$(zoxide init bash)"
+
+complete -C /usr/bin/tofu tofu
