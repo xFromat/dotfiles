@@ -16,7 +16,7 @@ MONITOR2 = "DP-1"
 MONITOR3 = "desc: Technical Concepts Ltd Beyond TV 0x00010000"
 MONITOR4 = ""
 
-local PRIORITY = { MONITOR3, MONITOR2, MONITOR1, MONITOR4 }
+local PRIORITY = { MONITOR3, MONITOR2, MONITOR4, MONITOR1 }
 local function pick_primary()
 	for _, name in ipairs(PRIORITY) do
 		if hl.get_active_monitor(name) ~= nil then

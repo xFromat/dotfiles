@@ -125,3 +125,10 @@ shopt -s cdspell
 export PATH=$PATH:$HOME/.local/opt/go/bin
 
 . "$HOME/.local/share/../bin/env"
+
+export NVM_DIR="$HOME/.config/nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+
+export EDITOR=nvim
+export VISUAL=zed

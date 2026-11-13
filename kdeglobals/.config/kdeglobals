@@ -131,7 +131,7 @@ ForegroundPositive=175,207,171
 ForegroundVisited=244,224,187
 
 [General]
-ColorScheme=Noctalia
+ColorScheme=noctalia
 Name=noctalia
 TerminalApplication=ghostty
 
